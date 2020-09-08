@@ -12,7 +12,7 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
-  companyName: DefaultCompany
+  companyName: Workhorse Bytes
   productName: Project08-Analytics
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
@@ -585,7 +585,9 @@ PlayerSettings:
   webGLLinkerTarget: 1
   webGLThreadsSupport: 0
   webGLDecompressionFallback: 0
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    4: 
+    7: 
   platformArchitecture: {}
   scriptingBackend:
     Standalone: 0
