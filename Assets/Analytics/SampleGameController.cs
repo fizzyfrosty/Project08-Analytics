@@ -12,11 +12,14 @@ public class SampleGameController : MonoBehaviour, WorldInputDelegate
 
     private WorldInputController worldInput;
     public InputSettings inputSettings;
-    public AnalyticsController analytics;
+    AnalyticsController analytics;
 
     int coalAmount = 0;
     string coalId = "Coal";
+    string itemType = "Harvest"; // Treat item type as method of extraction
+    string itemId = "Resource"; // Treat itemId as type
     int level = 0;
+    int amountOfCoalToReachNewLevel = 5;
 
     void Awake()
     {
@@ -41,12 +44,41 @@ public class SampleGameController : MonoBehaviour, WorldInputDelegate
 
     }
 
+    // ----------------- Private Sample implemention methods --------------
+    void MineCoal()
+    {
+        coalAmount++;
+        debugger.Log( "Mined some Coal: " + coalAmount);
+    }
+
+    bool DidMineEnoughCoal(int coalAmount)
+    {
+        if (coalAmount != 0 && coalAmount % amountOfCoalToReachNewLevel == 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    // ----------------- End of Private Sample implemention methods --------------
+
+
+    // ---------------------- User Input Delegates -----------------
     void WorldInputDelegate.WorldInputDidEnterPoint(Vector3 point, RaycastHit hit)
     {
         if (hit.collider.name == "UpperLeftCube")
         {
-            coalAmount++;
-            debugger.Log( "Mined some Coal: " + coalAmount);
+            MineCoal();
+
+            if (DidMineEnoughCoal(coalAmount))
+            {
+                level++;
+                debugger.Log("Reached new level!: " + level);
+
+                analytics.LogProgress(ProgressStatus.Complete, "level" + level);
+                analytics.LogCurrencyTransaction(CurrencyTransactionType.Gain, currencyType: coalId, currencyValue: amountOfCoalToReachNewLevel, itemType: itemType, itemId: itemId);
+            }
         }
         else if (hit.collider.name == "UpperRightCube")
         {
@@ -58,16 +90,7 @@ public class SampleGameController : MonoBehaviour, WorldInputDelegate
         }
 
 
-        int amountToReachNewLevel = 5;
 
-        if (coalAmount != 0 && coalAmount % amountToReachNewLevel == 0)
-        {
-            level++;
-            debugger.Log("Reached new level!: " + level);
-
-            analytics.LogProgress(ProgressStatus.Complete, "level" + level);
-            analytics.LogCurrencyTransaction(CurrencyTransactionType.Gain, currencyType: coalId, currencyValue: amountToReachNewLevel);
-        }
     }
     void WorldInputDelegate.WorldInputDidMovePoint(Vector3 point, RaycastHit hit)
     {
@@ -77,4 +100,6 @@ public class SampleGameController : MonoBehaviour, WorldInputDelegate
     {
         //debugger.Log( "Released a world point: " + point);
     }
+
+    // ---------------------- End of User Input Delegates -----------------
 }

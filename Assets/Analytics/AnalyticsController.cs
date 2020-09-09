@@ -73,7 +73,7 @@ namespace JFoundation
             debugger.Log(string.Format("Logged Progress Analytic: status: {0}, seg1: {1}, seg2: {2}, seg3: {3}, value: {4}", gaProgressStatus, progress1, progress2, progress3, value));
         }
 
-        public void LogCurrencyTransaction(CurrencyTransactionType transactionType, string currencyType, float currencyValue, string itemType = "", string itemId = "")
+        public void LogCurrencyTransaction(CurrencyTransactionType transactionType, string currencyType, float currencyValue, string itemType, string itemId)
         {
             /* itemType and itemId are optional items that are involved in a transaction
             If currency is Gained, an item is counted as lost
