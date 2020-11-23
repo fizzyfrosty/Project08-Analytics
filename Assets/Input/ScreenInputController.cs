@@ -36,6 +36,8 @@ namespace JFoundation
     {
         // Prefab dependencies
         public InputSettings inputSettings;
+        string TOUCH_INPUT_SETTINGS_PATH = "Input/iOS - Input Settings";
+        string PC_INPUT_SETTINGS_FILEPATH = "Input/PC - Input Settings";
 
         // Dependencies
         Debugger debugger;
@@ -51,15 +53,33 @@ namespace JFoundation
         public ScreenInputDelegate inputDelegate;
         public ScreenSpecialInputDelegate specialInputDelegate;
 
+        bool isBlockedByUiElements = true;
+
         void Awake()
         {
             debugger = DependencyLoader.LoadGameObject<Debugger>("Debugger", this, gameObject) as Debugger;
         }
 
-        public void SetDependencies(ScreenInputDelegate inputDelegate, InputSettings inputSettings)
+        public void SetDependencies(ScreenInputDelegate inputDelegate)
         {
             this.inputDelegate = inputDelegate;
-            this.inputSettings = inputSettings;
+        }
+
+        // Can be called during Awake()
+        public void SetIsBlockedByUiElements(bool isBlocked)
+        {
+            // We need to set this and activate for PC/Touch controller because they may not be initialized at startup if this is called on Awake()
+            isBlockedByUiElements = isBlocked;
+
+            if (touchController)
+            {
+                touchController.isBlockedByUiElements = isBlocked;
+            }
+
+            if (pcInputController)
+            {
+                pcInputController.isBlockedByUiElements = isBlocked;
+            }
         }
 
         // Has to happen after dependencies are set
@@ -72,24 +92,44 @@ namespace JFoundation
 
                 this.touchController = gameObject.AddComponent(typeof(TouchController)) as TouchController;
                 touchController.SetDependencies(debugger, this);
+                touchController.isBlockedByUiElements = isBlockedByUiElements;
             }
 
             if (inputSettings.isPcInputEnabled)
             {
                 this.pcInputController = gameObject.AddComponent(typeof(PcInputController)) as PcInputController;
                 pcInputController.SetDependencies(debugger, this);
+                pcInputController.isBlockedByUiElements = isBlockedByUiElements;
+            }
+        }
+
+        void SetInputSettingsAutomatically()
+        {
+            #if UNITY_IOS || UNITY_ANDROID
+            // Load mobile touch input settings
+            inputSettings = Resources.Load(TOUCH_INPUT_SETTINGS_PATH) as InputSettings;
+            #else
+            // Load PC input settings
+            inputSettings = Resources.Load(PC_INPUT_SETTINGS_FILEPATH) as InputSettings;
+            #endif
+
+            if (Application.isEditor)
+            {
+                inputSettings = Resources.Load(PC_INPUT_SETTINGS_FILEPATH) as InputSettings;
             }
         }
 
         // Start is called before the first frame update
         void Start()
         {
-            debugger.Log("Attempting to start...");
+            SetInputSettingsAutomatically();
 
-            InitializeVarsAfterDependencies();
+            DependencyLoader.DependencyCheck<InputSettings>(inputSettings, this, gameObject, debugger);
 
             if (inputSettings != null)
             {
+                InitializeVarsAfterDependencies();
+
                 if (inputSettings.isTouchInputEnabled)
                 {
                     debugger.Log(TOUCH_INPUT_ENABLED);
@@ -98,10 +138,6 @@ namespace JFoundation
                 {
                     debugger.Log(PC_INPUT_ENABLED);
                 }
-            }
-            else
-            {
-                debugger.WarnMissingDependency<ScreenInputController, InputSettings>(gameObject, inputSettings.showDebug);
             }
         }
 

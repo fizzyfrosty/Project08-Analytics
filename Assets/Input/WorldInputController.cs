@@ -31,6 +31,9 @@ namespace JFoundation
         public WorldSpecialInputDelegate specialInputDelegate;
 
         InputSettings inputSettings;
+        string TOUCH_INPUT_SETTINGS_PATH = "Input/iOS - Input Settings";
+        string PC_INPUT_SETTINGS_FILEPATH = "Input/PC - Input Settings";
+
         public ScreenInputController screenInput;
         Camera screenCam;
 
@@ -41,22 +44,45 @@ namespace JFoundation
             debugger = DependencyLoader.LoadGameObject<Debugger>("Debugger", this, gameObject) as Debugger;
         }
 
-        public void SetDependencies(WorldInputDelegate inputDelegate, InputSettings inputSettings, Camera screenCam)
+        public void SetDependencies(WorldInputDelegate inputDelegate, Camera screenCam)
         {
             this.inputDelegate = inputDelegate;
-            this.inputSettings = inputSettings;
             this.screenCam = screenCam;
+        }
+
+        // Can be called during Awake()
+        public void SetIsBlockedByUiElements(bool isBlocked)
+        {
+            screenInput.SetIsBlockedByUiElements(isBlocked);
+        }
+
+        void SetInputSettingsAutomatically()
+        {
+            #if UNITY_IOS || UNITY_ANDROID
+            // Load mobile touch input settings
+            inputSettings = Resources.Load(TOUCH_INPUT_SETTINGS_PATH) as InputSettings;
+            #else
+            // Load PC input settings
+            inputSettings = Resources.Load(PC_INPUT_SETTINGS_FILEPATH) as InputSettings;
+            #endif
+
+            if (Application.isEditor)
+            {
+                inputSettings = Resources.Load(PC_INPUT_SETTINGS_FILEPATH) as InputSettings;
+            }
         }
 
         // Start is called before the first frame update
         void Start()
         {
+            SetInputSettingsAutomatically();
+
             DependencyLoader.DependencyCheck<InputSettings>(inputSettings, this, gameObject, debugger);
 
             if (inputSettings)
             {
                 screenInput = gameObject.AddComponent<ScreenInputController>() as ScreenInputController;
-                screenInput.SetDependencies(this, inputSettings);
+                screenInput.SetDependencies(this);
                 screenInput.specialInputDelegate = this;
             }
         }

@@ -4,7 +4,7 @@ using UnityEngine;
 using GameAnalyticsSDK;
 using JFoundation;
 
-public class SampleGameController : MonoBehaviour, WorldInputDelegate
+public class SampleAnalyticsController : MonoBehaviour, WorldInputDelegate
 {
 
     private Debugger debugger;
@@ -33,7 +33,7 @@ public class SampleGameController : MonoBehaviour, WorldInputDelegate
         if (DependencyLoader.DependencyCheck<InputSettings>(inputSettings, this, gameObject, debugger))
         {
             worldInput = gameObject.AddComponent<WorldInputController>() as WorldInputController;
-            worldInput.SetDependencies(this, inputSettings, screenCam);
+            worldInput.SetDependencies(this, screenCam);
 
         }
     }

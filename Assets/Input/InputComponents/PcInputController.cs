@@ -40,6 +40,8 @@ namespace JFoundation
 
         string WARNING_DELEGATE_NOT_SET = "Warning: PC Input Controller Delegate not set!";
 
+        public bool isBlockedByUiElements = true;
+
         // Start is called before the first frame update
         void Start()
         {
@@ -104,11 +106,14 @@ namespace JFoundation
 
         bool IsMouseDownBlockedByRaycastedObject()
         {
-            if (EventSystem.current)
+            if (isBlockedByUiElements == true)
             {
-                if (EventSystem.current.IsPointerOverGameObject())
+                if (EventSystem.current)
                 {
-                    return true;
+                    if (EventSystem.current.IsPointerOverGameObject())
+                    {
+                        return true;
+                    }
                 }
             }
 

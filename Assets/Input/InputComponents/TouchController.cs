@@ -37,6 +37,7 @@ namespace JFoundation
 
         List<Touch> capturedTouches;
         bool shouldProhibitFirstTouchRelease = false;
+        public bool isBlockedByUiElements = true;
 
         public void SetDependencies(Debugger debugger, TouchControllerDelegate touchDelegate)
         {
@@ -101,14 +102,17 @@ namespace JFoundation
 
         bool IsTouchBlockedByRaycastedObject(Touch touch)
         {
-            if (EventSystem.current)
+            if (isBlockedByUiElements == true)
             {
-                if (EventSystem.current.IsPointerOverGameObject(touch.fingerId))
+                if (EventSystem.current)
                 {
-                    return true;
+                    if (EventSystem.current.IsPointerOverGameObject(touch.fingerId))
+                    {
+                        return true;
+                    }
                 }
             }
-
+            
             return false;
         }
 
